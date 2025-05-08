@@ -1,0 +1,57 @@
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment directory
+.venv/
+
+# Ignore SQLite database file
+db.sqlite3
+
+# Ignore common OS files
+.DS_Store
+
+# Ignore frontend dependencies
+frontend/node_modules/
+
+# Ignore common temporary and backup files
+*.bak
+*.backup
+*.swp
+*.tmp
+*~
+
+# Ignore logs
+logs/
+
+# Ignore environment file
+.env
+
+# Ignore VS Code settings (optional, depending on preference)
+.vscode/
+
+# Ignore LiveKit Redis data
+livekit/redis-data/
+
+# Ignore LiveKit config backups
+livekit/*.bak
+livekit/*.backup
+
+# Ignore Nginx config backups
+nginx/*.bak
+nginx/*.backup
+
+# Ignore Node service backups/temps
+node/*.bak
+node/*.backup
+node/*.tmp
+
+# The 'supabase' directory seems to contain Supabase platform source/files, not project code. Ignore most of it, except specific necessary configuration volumes if they exist.
+# Based on docker-compose, volumes/api/kong.yml is used. We should NOT ignore that specific file.
+# Ignoring the main contents but explicitly NOT ignoring the volumes directory content.
+/supabase/*
+!/supabase/volumes/
+/supabase/volumes/*
+!/supabase/volumes/api/
+/supabase/volumes/api/*
+!/supabase/volumes/api/kong.yml 

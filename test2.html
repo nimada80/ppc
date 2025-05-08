@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>تست API با XMLHttpRequest</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            direction: rtl;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        input[type="email"], 
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: monospace;
+            min-height: 100px;
+            font-size: 14px;
+            direction: ltr;
+            text-align: left;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .methods button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>تست API با روش XMLHttpRequest</h1>
+    
+    <div class="container">
+        <div class="form-group">
+            <label for="api-url">آدرس API:</label>
+            <input type="text" id="api-url" value="http://localhost/api/node/token" />
+        </div>
+        
+        <div class="form-group">
+            <label for="email">ایمیل:</label>
+            <input type="email" id="email" value="test01@example.com" />
+        </div>
+        
+        <div class="form-group">
+            <label for="password">رمز عبور:</label>
+            <input type="password" id="password" value="123456" />
+        </div>
+        
+        <div class="methods">
+            <button onclick="sendUsingXHR()">ارسال با XMLHttpRequest</button>
+            <button onclick="sendUsingJQuery()">ارسال با jQuery (اگر موجود باشد)</button>
+        </div>
+        
+        <div id="status" class="status pending">آماده برای ارسال درخواست...</div>
+        
+        <h3>پاسخ دریافتی:</h3>
+        <pre id="response">هنوز درخواستی ارسال نشده است.</pre>
+        
+        <h3>اطلاعات اضافی:</h3>
+        <pre id="debug"></pre>
+    </div>
+    
+    <!-- اضافه کردن jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <script>
+        // تابع ارسال با XMLHttpRequest
+        function sendUsingXHR() {
+            const apiUrl = document.getElementById('api-url').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const statusElement = document.getElementById('status');
+            const responseElement = document.getElementById('response');
+            const debugElement = document.getElementById('debug');
+            
+            // نمایش وضعیت در حال پردازش
+            statusElement.className = 'status pending';
+            statusElement.textContent = 'در حال ارسال درخواست با XMLHttpRequest...';
+            responseElement.textContent = 'منتظر پاسخ...';
+            
+            // لاگ برای اشکال‌زدایی
+            const debugInfo = {
+                method: "XMLHttpRequest",
+                url: apiUrl,
+                requestBody: { email, password },
+                browserInfo: navigator.userAgent
+            };
+            debugElement.textContent = JSON.stringify(debugInfo, null, 2);
+            
+            // ایجاد یک شیء XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            
+            // پیکربندی درخواست
+            xhr.open('POST', apiUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Accept', 'application/json');
+            
+            // تنظیم withCredentials برای ارسال کوکی‌ها
+            xhr.withCredentials = true;
+            
+            // ثبت تابع برای پاسخ
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) { // درخواست تکمیل شده
+                    console.log(`XHR Response status: ${xhr.status}`);
+                    console.log(`XHR Raw response: ${xhr.responseText.substring(0, 100)}...`);
+                    
+                    let formattedResponse = xhr.responseText;
+                    
+                    // تلاش برای تبدیل به JSON
+                    try {
+                        if (xhr.responseText) {
+                            const jsonData = JSON.parse(xhr.responseText);
+                            formattedResponse = JSON.stringify(jsonData, null, 2);
+                        }
+                        
+                        // به‌روزرسانی وضعیت
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            statusElement.className = 'status success';
+                            statusElement.textContent = `موفقیت‌آمیز! کد وضعیت: ${xhr.status}`;
+                        } else {
+                            statusElement.className = 'status error';
+                            statusElement.textContent = `خطا! کد وضعیت: ${xhr.status}`;
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing JSON:', parseError);
+                        formattedResponse = xhr.responseText;
+                        statusElement.className = 'status error';
+                        statusElement.textContent = `خطا در تبدیل پاسخ به JSON. کد وضعیت: ${xhr.status}`;
+                    }
+                    
+                    // نمایش پاسخ
+                    responseElement.textContent = formattedResponse;
+                }
+            };
+            
+            // ثبت تابع برای خطا
+            xhr.onerror = function(error) {
+                console.error('XHR Request error:', error);
+                statusElement.className = 'status error';
+                statusElement.textContent = `خطا در برقراری ارتباط: ${error.message || 'خطای ناشناخته'}`;
+                responseElement.textContent = `خطا: ارتباط با سرور برقرار نشد`;
+                
+                // اطلاعات بیشتر
+                debugElement.textContent += `\n\nXHR Error: ${JSON.stringify(error)}`;
+            };
+            
+            // ارسال درخواست
+            try {
+                xhr.send(JSON.stringify({ email, password }));
+                console.log(`XHR Sending request to: ${apiUrl}`);
+            } catch (e) {
+                console.error('XHR Error sending request:', e);
+                statusElement.className = 'status error';
+                statusElement.textContent = `خطا در ارسال درخواست: ${e.message}`;
+                responseElement.textContent = `خطا: ${e.message}`;
+                debugElement.textContent += `\n\nXHR Send Error: ${e.stack || e}`;
+            }
+        }
+        
+        // تابع ارسال با jQuery
+        function sendUsingJQuery() {
+            if (typeof $ === 'undefined') {
+                alert('کتابخانه jQuery موجود نیست!');
+                return;
+            }
+            
+            const apiUrl = document.getElementById('api-url').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const statusElement = document.getElementById('status');
+            const responseElement = document.getElementById('response');
+            const debugElement = document.getElementById('debug');
+            
+            // نمایش وضعیت در حال پردازش
+            statusElement.className = 'status pending';
+            statusElement.textContent = 'در حال ارسال درخواست با jQuery...';
+            responseElement.textContent = 'منتظر پاسخ...';
+            
+            // لاگ برای اشکال‌زدایی
+            const debugInfo = {
+                method: "jQuery ajax",
+                url: apiUrl,
+                requestBody: { email, password },
+                browserInfo: navigator.userAgent
+            };
+            debugElement.textContent = JSON.stringify(debugInfo, null, 2);
+            
+            console.log(`jQuery sending request to: ${apiUrl}`);
+            
+            // استفاده از jQuery برای ارسال درخواست
+            $.ajax({
+                url: apiUrl,
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                data: JSON.stringify({ email, password }),
+                success: function(data, textStatus, jqXHR) {
+                    console.log(`jQuery response status: ${jqXHR.status}`);
+                    console.log('jQuery response data:', data);
+                    
+                    statusElement.className = 'status success';
+                    statusElement.textContent = `موفقیت‌آمیز! کد وضعیت: ${jqXHR.status}`;
+                    responseElement.textContent = JSON.stringify(data, null, 2);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('jQuery request error:', textStatus, errorThrown);
+                    
+                    statusElement.className = 'status error';
+                    statusElement.textContent = `خطا! کد وضعیت: ${jqXHR.status} (${textStatus})`;
+                    
+                    // سعی در تبدیل پاسخ به JSON
+                    try {
+                        if (jqXHR.responseText) {
+                            const errorData = JSON.parse(jqXHR.responseText);
+                            responseElement.textContent = JSON.stringify(errorData, null, 2);
+                        } else {
+                            responseElement.textContent = `خطا: ${errorThrown}`;
+                        }
+                    } catch (e) {
+                        responseElement.textContent = jqXHR.responseText || `خطا: ${errorThrown}`;
+                    }
+                    
+                    debugElement.textContent += `\n\njQuery Error: ${textStatus}\n${errorThrown}`;
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

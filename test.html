@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>تست CORS API</title>
+</head>
+<body>
+    <h1>تست درخواست به API</h1>
+    <button id="testButton">ارسال درخواست</button>
+    <pre id="result">نتیجه اینجا نمایش داده می‌شود...</pre>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://localhost:3030/api/node/token', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test01@example.com',
+                        password: '123456'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = 'خطا: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html> 
